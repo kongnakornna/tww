@@ -1,0 +1,71 @@
+<?php
+include '../leone.php';
+include '../admin/controller/eservice.php';
+include '../admin/controller/payment.php';
+include '../admin/controller/member.php';
+header('Content-Type: application/json; charset=utf-8');
+$member = new member();
+$eservice = new eservice();
+$payment = new payment();
+$param_email = (!empty($_REQUEST["email"])) ? $_REQUEST["email"] : "";
+$param_refcode = (!empty($_REQUEST["refcode"])) ? $_REQUEST["refcode"] : "";
+$param_cmd = (!empty($_REQUEST["cmd"])) ? $_REQUEST["cmd"] : "";
+
+if ($param_refcode=='' || $param_email=='') {
+	$msg = 'Êè§ parameter ÁÒäÁè¤Ãº¤èÐ';
+	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+}else{
+	$havepayment = $payment->checkpayment($param_refcode,$param_email);
+	if ($havepayment) {
+        $paymentarray = $payment->getpaymentdata($param_refcode,$param_email);
+		for ($b=0;$b<count($paymentarray);$b++) {
+			$tt_id = $paymentarray[$b]['p_id'];
+			$tt_price = stripslashes($paymentarray[$b]['p_price']);
+			$tt_msisdn = stripslashes($paymentarray[$b]['p_msisdn']);
+			$tt_productid = stripslashes($paymentarray[$b]['p_productid']);
+			$tt_email = stripslashes($paymentarray[$b]['p_email']);
+			$tt_total = stripslashes($paymentarray[$b]['p_total']);
+		}
+
+		$serviceUrl = "https://www.epay4u.com/EPAYAPI/TOPUP.php";
+		$serviceUsername = "TestAPI";
+		$servicePassword = "asdewq123";
+
+		$productid = $eservice->getserviceid($tt_productid);
+
+		$ch = curl_init(); 
+		curl_setopt($ch, CURLOPT_URL,$serviceUrl);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"network=".trim($productid)."&user=".$serviceUsername."&password=".$servicePassword ."&mobile=".$tt_msisdn."&price=".$tt_price);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$xmldoc = curl_exec ($ch);
+		curl_close ($ch);
+		
+		if (preg_match("/<STATUS>(.*)<\/STATUS>/",$xmldoc,$matches))
+			$xmlStatus = $matches[1];
+		if (preg_match("/<TOPUPID>(.*)<\/TOPUPID>/",$xmldoc,$matches))
+			$xmlTopupId = $matches[1];
+		if (preg_match("/<CREDIT>(.*)<\/CREDIT>/",$xmldoc,$matches))
+			$xmlCredit = $matches[1];
+
+        if ($xmlStatus=='1') {
+		    $dataarray = array("result"=>"OK","result_desc"=>$String->tis2utf8($msg));
+			$payment->updatepaymentwait($param_refcode);
+			$payment->updatepaymentremark($xmldoc,$param_refcode);
+			$payment->updatepaymentapprovaldata($xmlTopupId,$xmlCredit,$param_refcode);
+		}else{
+		    $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($xmlTopupId));
+			$payment->updatepaymentstatusfail($param_refcode);
+			$payment->updatepaymentremark($xmldoc,$param_refcode);
+		}
+	}else{
+		$msg = "äÁè¾º¢éÍÁÙÅ¡ÒÃªÓÃÐà§Ô¹¤èÐ";
+		$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+	}
+}
+
+$carddata = array ("resultdata"=>$dataarray);
+$resultxml = json_encode($carddata,JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+print $resultxml;
+?>
+

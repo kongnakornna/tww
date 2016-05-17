@@ -1,0 +1,220 @@
+<?php
+Class eservice extends MySqlDB {
+    function getdata($cat='') {
+        $RowData = array();
+		if ($cat=='') {
+            $SqlData = "select * from tbl_eservice where prod_flag = 1 order by e_group,e_id";
+		}else{
+            $SqlData = "select * from tbl_eservice where prod_flag = 1 and e_cat='".$cat."' order by e_group,e_id";
+		}
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData[] = $this->DBfetch_array($ResultData,$t);
+            }
+        }
+        return $RowData;
+    }
+    
+    function getdataall($cat='') {
+        $RowData = array();
+		if ($cat=='') {
+            $SqlData = "select * from tbl_eservice where order by e_group,e_id";
+		}else{
+            $SqlData = "select * from tbl_eservice where e_cat='".$cat."' order by e_group,e_id";
+		}
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData[] = $this->DBfetch_array($ResultData,$t);
+            }
+        }
+        return $RowData;
+    }
+
+	function getserviceid ($code='') {
+		$serviceid = "";
+		$SqlData = "select * from tbl_eservice where e_code='".$code."' order by e_id";
+		$ResultData = $this->DataExecute($SqlData);
+		$RowsData = $this->DBNumRows($ResultData);
+		if ($RowsData>0) {
+			 for ($t=0;$t<$RowsData;$t++) {
+				 $RowData = $this->DBfetch_array($ResultData,$t);
+				 $serviceid = $RowData['e_serviceid'];
+			 }
+		}
+		return $serviceid;
+	}
+
+    function getecharge($itemid='') {
+        $RowData = array();
+        $SqlData = "select * from tbl_eservice where e_code='".$itemid."' order by e_id";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData = $this->DBfetch_array($ResultData,$t);
+				$echarge = $RowData['e_charge'];
+            }
+        }
+        return $echarge;
+    }
+    
+    function getediscount($itemid='',$memberid='',$price='') {
+        $RowData = array();
+        $RowDatatemp = array();
+        $RowDataoutput = array();
+       	$dcode = '';
+       	$codetype = '';
+       	$memberid_dcode = '';
+        $SqlData = "select * from tbl_eservice where e_code='".$itemid."'";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData = $this->DBfetch_array($ResultData,$t);
+            }
+        }
+        
+        $SqlData = "select * from tbl_member where m_code='".$memberid."'";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsDatatemp = $this->DBNumRows($ResultData);
+        if ($RowsDatatemp>0) {
+            for ($t=0;$t<$RowsDatatemp;$t++) {
+                $RowDatatemp = $this->DBfetch_array($ResultData,$t);
+        	$dcode = $RowDatatemp['m_dcode'];
+        	$codetype = $RowDatatemp['m_codetype'];
+            }
+        }
+       
+        if ($codetype == 'S' && $dcode != '') { 
+        $SqlData = "select * from tbl_username where u_code='".$dcode."'";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsDatatemp = $this->DBNumRows($ResultData);
+        if ($RowsDatatemp>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowsDatatemp = $this->DBfetch_array($ResultData,$t);
+        	$memberid_dcode = $RowDatatemp['memberid'];
+            }
+        }
+        }
+       
+        // Find Discount rate for own and others (Percentage or Fixed)
+        if ($RowData['disc_type'] == 'P') { 
+            if ($codetype == 'S') {
+                $discount_result_own = ($RowData['disc_rate_sd']*$price)/100;
+                $rev_share_ipps = ($RowData['rev_share_ipps']*$price)/100;
+                $rev_share = ($RowData['rev_share']*$price)/100;
+                if ($memberid_dcode != '') {
+                    $discount_result_other = ($RowData['disc_rate_d']*$price)/100;
+                }
+                else {
+                    $discount_result_other = 0;
+                }
+            }
+            else {
+                $discount_result_own = (($RowData['disc_rate_sd']+$RowData['disc_rate_d'])*$price)/100;
+                $rev_share_ipps = ($RowData['rev_share_ipps']*$price)/100;
+                $rev_share = ($RowData['rev_share']*$price)/100;
+                $discount_result_other = 0;
+            }
+        }
+
+        else {
+            if ($codetype == 'S') {
+                $discount_result_own =  $RowData['disc_rate_sd'];
+                $rev_share_ipps = $RowData['rev_share_ipps'];
+                $rev_share = $RowData['rev_share'];
+                if ($memberid_dcode != '') {
+                    $discount_result_other = $RowData['disc_rate_d'];
+                }
+                else {
+                    $discount_result_other = 0;
+                } 
+            }
+            else {
+                $discount_result_own = $RowData['disc_rate_sd']+$RowData['disc_rate_d'];
+                $rev_share_ipps = $RowData['rev_share_ipps'];
+                $rev_share = $RowData['rev_share'];
+                $discount_result_other = 0;
+            }
+        }
+        
+        $RowDataoutput['memberid_own'] = $memberid ;
+        $RowDataoutput['memberid_other'] = $memberid_dcode;
+        $RowDataoutput['discount_result_own'] = $discount_result_own;
+        $RowDataoutput['discount_result_other'] = $discount_result_other;
+        $RowDataoutput['rev_share_ipps'] = $rev_share_ipps;
+        $RowDataoutput['rev_share'] = $rev_share;
+
+        return $RowDataoutput;
+    }
+    
+    
+    function getegroup($itemid='') {
+        $RowData = array();
+        $SqlData = "select * from tbl_eservice where e_code='".$itemid."' order by e_id";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData = $this->DBfetch_array($ResultData,$t);
+				$egroup = $RowData['e_group'];
+            }
+        }
+        return $egroup;
+    }
+    
+    
+    function gettitle($itemid='') {
+        $RowData = array();
+        $SqlData = "select * from tbl_eservice where e_code='".$itemid."' order by e_id";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData = $this->DBfetch_array($ResultData,$t);
+				$dbtitle = $RowData['e_title'];
+            }
+        }
+        return $dbtitle;
+    }
+
+   function getpaymentmap($itemid='') {
+        $RowData = array();
+        $SqlData = "select * from tbl_payment_mapping where e_code='".$itemid."'";
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData = $this->DBfetch_array($ResultData,$t);
+		$partnercode = $RowData['e_partnercode'];
+            }
+        }
+        return $partnercode;
+    }
+
+    function gettopup($itemid='') {
+        $RowData = array();
+        if ($itemid=='ES0001') {
+           $SqlData = "select * from tbl_topup where t_happy='1' order by t_id";            
+        }else if ($itemid=='ES0002') {
+           $SqlData = "select * from tbl_topup where t_truemove='1' order by t_id";            
+        }else if ($itemid=='ES0003') {
+           $SqlData = "select * from tbl_topup where t_truemoveh='1' order by t_id";            
+        }else{
+           $SqlData = "select * from tbl_topup where t_happy='1' order by t_id";                
+        }
+        $ResultData = $this->DataExecute($SqlData);
+        $RowsData = $this->DBNumRows($ResultData);
+        if ($RowsData>0) {
+            for ($t=0;$t<$RowsData;$t++) {
+                $RowData[] = $this->DBfetch_array($ResultData,$t);
+            }
+        }
+        return $RowData;
+    }    
+}
+?>

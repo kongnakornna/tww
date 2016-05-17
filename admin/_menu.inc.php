@@ -1,0 +1,135 @@
+<script type="text/javascript">
+<!--
+var myMenu;
+window.onload = function() {
+	myMenu = new SDMenu("my_menu");
+	myMenu.remember = true;
+	myMenu.oneSmOnly = false;
+	myMenu.markCurrent = true;
+	myMenu.init();
+	var firstSubmenu = myMenu.submenus[0];
+};
+//-->
+</script>
+<link rel="stylesheet" type="text/css" href="./style/sdmenu.css" />
+<script language="JavaScript" type="text/javascript" src="./js/sdmenu.js"></script>
+<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+<tr><td valign="top"><div style="float: left" id="my_menu" class="sdmenu">
+<?php
+if ($Web->hostCheck($_SESSION['TWZPermission'],'01')) {
+?>
+<div class="collapsed">
+	<span>จัดการข้อมูลทะเบียนสมาชิก</span>
+	<a href="member_view.php">ข้อมูลทะเบียนสมาชิก</a>
+	<a href="member_wait_view.php">ข้อมูลผู้กำลังลงทะเบียน</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'02')) {
+?>
+<div class="collapsed">
+	<span>แนะนำร้านที่ใช้ EasyCard ได้</span>
+	<a href="categorieadd_form.php">เพิ่มประเภทร้านค้า</a>
+	<a href="categorie_view.php">แสดงรายการประเภทร้านค้า</a>
+	<a href="productadd_form.php">สร้างข้อมูลร้านค้า</a>
+	<a href="product_view.php">แสดงข้อมูลร้านค้า</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'03')) {
+?>
+<div class="collapsed">
+	<span>จัดการผู้ร่วมค้า</span>
+	<a href="partneradd_form.php">เพิ่มชื่อผู้ร่วมค้า</a>
+	<a href="partner_view.php">แสดงชื่อผู้ร่วมค้า</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'04')) {
+?>
+<div class="collapsed">
+	<span>จัดการรายงาน</span>
+	<a href="report_summary_form.php">ยอดขายรวมทุกร้านค้า</a>
+	<a href="report_dev_step1.php">ยอดขายแต่ละร้านค้า</a>
+	<a href="report_all_form.php">ยอดขายทั้งหมด</a>
+	<a href="report_all_form_payment.php">รายงานชำระค่าบริการ</a>  
+	<a href="report_box_form.php">ยอดการเติมเงินแต่ละ Topup</a>
+	<a href="m-reportdealer_form.php">ดูรายชื่อสมาชิกที่ D-Code เป็นผู้สมัคร</a>
+	<a href="m-reportdealerpay_form.php">ดูผลสมาชิกของ D-Code ที่เติมเงินแล้ว</a>
+	<a href="m-report_form.php">ดูรายชื่อสมาชิกที่ S-Code เป็นผู้สมัคร</a>
+	<a href="m-reportpay_form.php">ดูผลสมาชิกของ S-Code ที่เติมเงินแล้ว</a>
+	<a href="reportmember_form.php">ยอดผู้ลงทะเบียนสมาชิก</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'05')) {
+?>
+<div class="collapsed">
+	<span>จัดการการเงิน</span>
+	<a href="member_book_view.php">รายการเดินบัญชีของสมาชิก</a>
+	<a href="payment_view.php">รายการเติมเงิน EasyCard Counter</a>
+	<a href="paymoney_view.php">ดูรายการเติมเงินของสมาชิก</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'06')) {
+?>
+<div class="collapsed">
+	<span>จัดการข้อมูลกลาง</span>
+	<a href="banneradd_form.php">เพิ่มป้ายโฆษณาหน้าแรก (Web/App)</a>
+	<a href="banner_view.php">แสดงป้ายโฆษณาหน้าแรก (Web/App)</a>
+	<a href="config_form.php?code=01">จัดการอีเมล์รับข้อมูลทั่วไป</a>
+	<a href="config_form.php?code=02">จัดการอีเมล์รับข้อมูล Dev</a>
+	<a href="message_form.php?code=01">วิธีใช้งาน EasyCard</a>
+	<a href="message_form.php?code=02">นโยบายบริการ</a>
+	<a href="message_form.php?code=03">เกี่ยวกับ EasyCard</a>
+	<a href="message_form.php?code=04">สิทธิและเงื่อนไขบริการ</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'07')) {
+?>
+<div class="collapsed">
+	<span>จัดการผู้ลงทะเบียนให้สมาชิก</span>
+	<a href="m-useradd_form.php">เพิ่มรายชื่อ D-Code</a>
+	<a href="m-user_view.php">แสดงรายชื่อ D-Code</a>
+	<a href="m-user_import_form.php">นำเข้ารายชื่อ D-Code จาก CSV</a>
+	<a href="s-useradd_form.php">เพิ่มรายชื่อ S-Code</a>
+	<a href="s-user_view.php">แสดงรายชื่อ S-Code</a>
+	<a href="s-user_import_form.php">นำเข้ารายชื่อ SD-Code จาก CSV</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'08')) {
+?>
+<div class="collapsed">
+	<span>จัดการผู้ใช้งานระบบเติมเงิน</span>
+	<a href="userpaymentadd_form.php">เพิ่มรายชื่อผู้ใช้งาน ระบบเติมเงิน</a>
+	<a href="userpayment_view.php">แสดงรายชื่อผู้ใช้งาน ระบบเติมเงิน</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'11')) {
+?>
+<div class="collapsed">
+	<span>จัดการรายงาน (Dcode)</span>
+	<a href="memberdcode_view.php">แสดงรายชื่อสมาชิกภายใต้ตัวแทน         (D-code)</a>
+	<a href="report_all_form_discount_own.php">แสดงรายงานผลตอบแทนของตัวแทน (D-code)</a>
+	<a href="report_all_form_discount_other.php">แสดงรายงานผลตอบแทนของสมาชิกภายใต้ตัวแทน (SD-code)</a>
+</div>
+<?php
+}
+if ($Web->hostCheck($_SESSION['TWZPermission'],'99')) {
+?>
+<div class="collapsed">
+	<span>จัดการผู้ใช้งาน Back Office</span>
+	<a href="permissionadd_form.php">เพิ่มรหัสเมนู</a>
+	<a href="permission_view.php">แสดงรหัสเมนู</a>
+	<a href="useradd_form.php">เพิ่มรายชื่อผู้ใช้งาน Back Office</a>
+	<a href="user_view.php">แสดงรายชื่อผู้ใช้งาน Back Office</a>
+</div>
+<?php
+}
+?>
+</div>
+</td></tr></table> 

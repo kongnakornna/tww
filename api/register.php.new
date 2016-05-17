@@ -1,0 +1,220 @@
+<?php
+require '../leone.php';
+header('Content-Type: application/json; charset=utf-8');
+require '../admin/controller/imei.php';
+require '../admin/controller/member.php';
+require '../admin/controller/payment.php';
+require '../class.phpmailer.php';
+$MYURL = "https://test.payforu.com/WebService/payforuservice.svc/RegisterCheck";
+$imei = new imei();
+$member = new member();
+$payment = new payment();
+
+$storearr = array ("71103","TWZ");
+$storename = array ("7-11 (มีค่าบริการเติมเงิน)","TWZ");
+
+
+$param_imeino = (!empty($_REQUEST["imeino"])) ? $_REQUEST["imeino"] : "";
+$param_mobileno = (!empty($_REQUEST["mobileno"])) ? $_REQUEST["mobileno"] : "";
+$param_fname = (!empty($_REQUEST["fname"])) ? $_REQUEST["fname"] : "";
+$param_email = (!empty($_REQUEST["email"])) ? $_REQUEST["email"] : "";
+$param_address = (!empty($_REQUEST["address"])) ? $_REQUEST["address"] : "";
+$param_province = (!empty($_REQUEST["province"])) ? $_REQUEST["province"] : "";
+$param_type = (!empty($_REQUEST["type"])) ? $_REQUEST["type"] : "";
+$param_saleid = (!empty($_REQUEST["saleid"])) ? $_REQUEST["saleid"] : "";
+$param_cardid = (!empty($_REQUEST["cardid"])) ? $_REQUEST["cardid"] : "";
+$param_bdate = (!empty($_REQUEST["bdate"])) ? $_REQUEST["bdate"] : "";
+$param_pass = (!empty($_REQUEST["pass"])) ? $_REQUEST["pass"] : "";
+$param_dcode = (!empty($_REQUEST["dcode"])) ? $_REQUEST["dcode"] : "";
+$param_bank = (!empty($_REQUEST["bank"])) ? $_REQUEST["bank"] : "";
+$param_bankcode = (!empty($_REQUEST["bankcode"])) ? $_REQUEST["bankcode"] : "";
+
+
+
+
+$param_fname = $String->utf82tis($param_fname);
+$param_address = $String->utf82tis($param_address);
+$param_saleid = strtoupper($param_saleid);
+$param_dcode = strtoupper($param_dcode);
+
+foreach($_REQUEST as $name => $value) {
+	$params[$name] = $value;
+}
+
+foreach($params as $name => $value) {
+	$basedata .= $name . "  :  " . $value . "\n";
+}
+
+if ($param_fname=='' || $param_imeino=='' || $param_email=='' ||  $param_province=='') {
+	$msg = "กรุณาข้อมูลให้ครบตามที่กำหนดด้วยค่ะ";
+    $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+}else{
+	$SqlCheck = "select * from tbl_member where m_email='".trim(strtolower($param_email))."' order by m_id";
+	$ResultCheck = $DatabaseClass->DataExecute($SqlCheck);
+	$RowsCheck = $DatabaseClass->DBNumRows($ResultCheck);
+	if ($RowsCheck>0) {
+        $msg = "บัญชีนี้ ได้ทำรายการไปแล้ว";
+        $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+	}else{
+		$haveimei = $imei->getcheckregister($param_imeino);
+
+		$pattern = "/^[a-zA-Z0-9]*$/i";
+		if(preg_match($pattern, $param_pass) || strlen ($param_pass) > 7 ) {          
+			if ($param_saleid=='' && $param_dcode==''){
+               $personal = "Y";
+			}else{
+               $personal = "N";
+			}
+
+            $keyid = $String->GenPassword(27);
+			$bdate = $DT->ConvertDateForSql($param_bdate);
+			$param_pincode = $String->GenPassword(6);
+
+			if ($haveimei=="0") {
+				$imeicheckoth = $member->imeicheck($param_imeino);
+				if ($imeicheckoth) {
+					$msg = "ไม่สามารถลงทะเบียนได้ กรุณา ติดต่อกลับเจ้าหน้าที่";
+                    $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+				}else{
+					$xcode = "OTH";
+					$mcode = $member->runid ("01");
+					$SqlAdd = "insert into tbl_member (m_key,m_bankid,m_bankcode,m_pin,m_type,m_code,m_cardid,m_bdate,m_password,m_saleid,m_dcode,m_registerdate,m_fullname,m_address,m_province,m_mobile,m_imei,m_email,m_status,m_addby,m_adddate,m_producttype,m_productbrand,m_productmodel,m_personal) values ('".$keyid."','".$String->sqlEscape($param_bank)."','".$String->sqlEscape($param_bankcode)."','".$param_pincode."','".$xcode."','".$mcode."','".$param_cardid."','".$bdate."',MD5('".$param_pass."'),'".$String->sqlEscape($param_saleid)."','".$String->sqlEscape($param_dcode)."',now(),'".$String->sqlEscape($param_fname)."','".$String->sqlEscape($param_address)."','".$String->sqlEscape($param_province)."','".$String->sqlEscape($param_mobileno)."','".$String->sqlEscape($param_imeino)."','".$String->sqlEscape(strtolower($param_email))."','0','Mobile',now(),'".$String->sqlEscape($param_type)."','".$String->sqlEscape($param_brand)."','".$String->sqlEscape($param_model)."','".$personal."')";
+					$ResultAdd = $DatabaseClass->DataExecute($SqlAdd);
+
+					$imei->update($String->sqlEscape($param_imeino));
+
+					for ($k=0;$k<count($storearr);$k++) {
+						if ($storearr[$k]=='71101') {
+							$cardno = '36001' . $mcode . '210010';
+							$resultbarcode = $barcode->genfor71101($cardno);
+						}else if ($storearr[$k]=='71103') {
+							$cardno = '36003' . $mcode . '210010';
+							$resultbarcode = $barcode->genfor71103($cardno);
+						}else if ($storearr[$k]=='BIGC') {
+							$cardno = $mcode;
+							$resultbarcode = $barcode->genforbigc($cardno);
+						}else if ($storearr[$k]=='LOTUS') {
+							$cardno = $mcode;
+							$resultbarcode = $barcode->genforlotus($cardno);
+						}else{
+							$cardno = $mcode;
+							$resultbarcode = $barcode->genfor($cardno);
+						}
+
+						$SqlPayment = "insert into tbl_member_payment (p_title,p_membercode,p_memberemail,p_cardtype,p_cardnumber) values ('".$storename[$k]."','".$mcode."','".strtolower($param_email)."','".$storearr[$k]."','".$cardno."')";
+						$ResultPayment = $DatabaseClass->DataExecute($SqlPayment);
+					}
+
+					$Subject = "เปิดใช้งาน Easy Card";
+
+					$mailbody = "เรียน คุณ $param_fname<br/>";
+					$mailbody .= "&nbsp;&nbsp;ขอบคุณที่เลือกใช้บริการ Easy Card และเพื่อการใช้งาน Easy Card ของท่าน<br/> ให้ทำการคลิกที่ เปิดใช้งาน Easy Card เพื่อทำให้ Easy Card ของท่านสามารถใช้งาน ได้<br/><br/> <a href=\"https://www.easycard.club/activate.php?i=".$keyid."\" target=\"_blank\">เปิดใช้งาน Easy Card</a><br/><br/>(หลังจากทำการเปิดใช้งาน Easy Card แล้ว ท่านสามารถ Log in เข้าสู่บริการได้)<br/>ขอบคุณที่ใช้บริการ Easy Card<br/><br/>";
+					$mailbody .= "ขอแสดงความนับถือ<br/>";
+
+					$headers  = 'MIME-Version: 1.0' . "\r\n";
+					$headers .= 'Content-type: text/html; charset=tis-620' . "\r\n";
+					$headers .= 'From: ฝ่ายดูแลสมาชิก Easy Card <service-member@easycard.club>' . "\r\n";
+					mail($param_email, $Subject, $mailbody, $headers);
+
+				    $msg = "กรุณายืนยันการสมัครสมาชิก อีกครั้งทาง อีเมล์ที่ใช้ลงทะเบียน หากไม่ทำการยืนยัน สถานะสมาชิกจะไม่สมบูรณ์ และจะไม่สามารถใช้บริการได้";
+					$dataarray = array("result"=>"OK","result_desc"=>$String->tis2utf8($msg));
+				}
+			}else if ($haveimei=="N") {
+				$xcode = "TWZ";
+				$mcode = $member->runid ("01");
+				$SqlAdd = "insert into tbl_member (m_key,m_bankid,m_bankcode,m_pin,m_type,m_code,m_cardid,m_bdate,m_password,m_saleid,m_dcode,m_registerdate,m_fullname,m_address,m_province,m_mobile,m_imei,m_email,m_status,m_addby,m_adddate,m_producttype,m_productbrand,m_productmodel,m_personal) values ('".$keyid."','".$String->sqlEscape($param_bank)."','".$String->sqlEscape($param_bankcode)."','".$param_pincode."','".$xcode."','".$mcode."','".$param_cardid."','".$bdate."',MD5('".$param_pass."'),'".$String->sqlEscape($param_saleid)."','".$String->sqlEscape($param_dcode)."',now(),'".$String->sqlEscape($param_fname)."','".$String->sqlEscape($param_address)."','".$String->sqlEscape($param_province)."','".$String->sqlEscape($param_mobileno)."','".$String->sqlEscape($param_imeino)."','".$String->sqlEscape(strtolower($param_email))."','0','Mobile',now(),'".$String->sqlEscape($param_type)."','".$String->sqlEscape($param_brand)."','".$String->sqlEscape($param_model)."','".$personal."')";
+				$ResultAdd = $DatabaseClass->DataExecute($SqlAdd);
+
+				$imei->update($String->sqlEscape($param_imeino));
+
+				for ($k=0;$k<count($storearr);$k++) {
+					if ($storearr[$k]=='71101') {
+						$cardno = '36001' . $mcode . '210010';
+						$resultbarcode = $barcode->genfor71101($cardno);
+					}else if ($storearr[$k]=='71103') {
+						$cardno = '36003' . $mcode . '210010';
+						$resultbarcode = $barcode->genfor71103($cardno);
+					}else if ($storearr[$k]=='BIGC') {
+						$cardno = $mcode;
+						$resultbarcode = $barcode->genforbigc($cardno);
+					}else if ($storearr[$k]=='LOTUS') {
+						$cardno = $mcode;
+						$resultbarcode = $barcode->genforlotus($cardno);
+					}else{
+						$cardno = $mcode;
+						$resultbarcode = $barcode->genfor($cardno);
+					}
+
+					 $SqlPayment = "insert into tbl_member_payment (p_title,p_membercode,p_memberemail,p_cardtype,p_cardnumber) values ('".$storename[$k]."','".$mcode."','".strtolower($param_email)."','".$storearr[$k]."','".$cardno."')";
+					 $ResultPayment = $DatabaseClass->DataExecute($SqlPayment);
+				}	
+
+				$Subject = "เปิดใช้งาน Easy Card";
+
+				$mailbody = "เรียน คุณ $param_fname<br/>";
+				$mailbody .= "&nbsp;&nbsp;ขอบคุณที่เลือกใช้บริการ Easy Card และเพื่อการใช้งาน Easy Card ของท่าน<br/> ให้ทำการคลิกที่ เปิดใช้งาน Easy Card เพื่อทำให้ Easy Card ของท่านสามารถใช้งาน ได้<br/><br/> <a href=\"https://www.easycard.club/activate.php?i=".$keyid."\" target=\"_blank\">เปิดใช้งาน Easy Card</a><br/><br/>(หลังจากทำการเปิดใช้งาน Easy Card แล้ว ท่านสามารถ Log in เข้าสู่บริการได้)<br/>ขอบคุณที่ใช้บริการ Easy Card<br/><br/>";
+				$mailbody .= "ขอแสดงความนับถือ<br/>";
+				$headers  = 'MIME-Version: 1.0' . "\r\n";
+				$headers .= 'Content-type: text/html; charset=tis-620' . "\r\n";
+				$headers .= 'From: ฝ่ายดูแลสมาชิก Easy Card <service-member@easycard.club>' . "\r\n";
+				mail($param_email, $Subject, $mailbody, $headers);
+               
+				$msg = "กรุณายืนยันการสมัครสมาชิก อีกครั้งทาง อีเมล์ที่ใช้ลงทะเบียน หากไม่ทำการยืนยัน สถานะสมาชิกจะไม่สมบูรณ์ และจะไม่สามารถใช้บริการได้";
+                $dataarray = array("result"=>"OK","result_desc"=>$String->tis2utf8($msg));
+			}else{
+				$msg = "ไม่สามารถลงทะเบียนได้ กรุณา ติดต่อกลับเจ้าหน้าที่";
+                $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+			}
+		}else{
+			$msg = "รหัสผ่านไม่ถูกต้องตามรูปแบบ";
+            $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+		}
+	}
+}
+$basedata .= "Have IMEI : " .$haveimei . "\n";
+if ($datarray['result']  == 'SUCCESS')
+{
+    $ch = curl_init(); 
+    $merchant_id = "200000001777";
+    $secret_code = "twz123456";
+    $myreq =  "merchantid=".$merchant_id."&email=".$param_email."&mobileno=".$param_mobileno."&membercode=".$mcode; 
+    $hashstring = $merchant_id.$param_emai.$param_mobileno.$mcode;
+    $mdhashstring = md5($hashstring);
+    $myreq = $myreg."&hash=".$mdhashstring; 
+    curl_setopt($ch,CURLOPT_URL,$MYURL);
+    curl_setopt($ch,CURLOPT_POST,1);
+    curl_setopt($ch,CURLOPT_POSTFIELDS,$myreq);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $server_output = curl_exec ($ch);
+    curl_close($ch);
+    $result_array = extractresult(trim($server_output));
+    if (!is_null($result_array)) {
+        if ($result_array['status'] == '01') {
+            $myreq =  "merchantid=".$merchant_id."&email=".$param_email."&mobileno=".$param_mobileno."&firstname=".$param_fname."&lastname=&personalid=".$param_cardid."&membercode=".$mcode;
+            $hashstring = $merchant_id.$param_emai.$param_mobileno.$param_fname.$param_cardid.$mcode;
+            $mdhashstring = md5($hashstring);
+            $myreq = $myreg."&hash=".$mdhashstring; 
+            $MYURL = "https://test.payforu.com/WebService/payforuservice.svc/APIDirectRegisterURequest"; 
+            curl_setopt($ch,CURLOPT_URL,$MYURL);
+            curl_setopt($ch,CURLOPT_POST,1);
+            curl_setopt($ch,CURLOPT_POSTFIELDS,$myreq);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $server_output = curl_exec ($ch);
+            curl_close($ch);
+            $result_array = extractresult(trim($server_output)); 
+        }
+   }
+}
+
+
+
+$bookdata = array ("resultdata"=>$dataarray);
+$resultxml = json_encode($bookdata,JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+
+$basedata .= "\n\n" .$resultxml;
+
+$SqlAddLogs = "insert into tbl_logs (l_parameter,l_program) values ('".$basedata."','register.php')";
+$ResultAddLogs = $DatabaseClass->DataExecute($SqlAddLogs);
+$DatabaseClass->DBClose();
+print $resultxml;
+?>
