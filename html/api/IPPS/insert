@@ -1,0 +1,256 @@
+billpayment_commit.php:header('Content-Type: application/json; charset=utf-8');
+billpayment_commit.php:$request=$payment->loggingandroid($_REQUEST);
+billpayment_commit.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+billpayment_commit.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+billpayment_commit.php:        $memberid = $member->getcodebyemail($param_email); 
+billpayment_commit.php:        $havepayment = $payment->checkpayment($param_refid,$param_email);        
+billpayment_commit.php:        $paymentarray = $payment->getpaymentdata($param_refid,$param_email);
+billpayment_commit.php:        $reqstr = $ipps->bill_payment_confirm_msg($member_id,$service_id,$param_refid,$tt_txnid); 
+billpayment_commit.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+billpayment_commit.php:        $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);
+billpayment_commit.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+billpayment_commit.php:        $result_array = $ipps->extractresult($resstr);
+billpayment_commit.php:               $payment->updatepaymentstatus($param_refid);
+billpayment_commit.php:               #$payment->usedcardnobyemail($param_email,$tt_total);
+billpayment_commit.php:               $error_mesg=$payment->geterrormesg('bill_payment.php','IPPS',$result_array['status']);
+billpayment_commit.php:               $payment->updatepaymentstatusfail($param_refid);
+billpayment_commit.php:               $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));
+billpayment_commit.php:             $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+billpayment_commit.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+billpayment_prepare.php:header('Content-Type: application/json; charset=utf-8');
+billpayment_prepare.php:$request=$payment->loggingandroid($_REQUEST);
+billpayment_prepare.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+billpayment_prepare.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+billpayment_prepare.php:	$servicename = $eservice->gettitle ($param_code);
+billpayment_prepare.php:        $partnercode = $eservice->getpaymentmap ($param_code);
+billpayment_prepare.php:        $resultpayment = $payment->insertipps($partnercode,$param_code,$servicename,'I',$param_price,$param_sercharge,$param_totalprice,$param_refid,$param_txnid,$param_ref1,$param_ref2,$param_ref3,'N',$param_email,$param_email,'',$param_msisdn,'0');
+billpayment_prepare.php:            $reqstr = $ipps->bill_payment_request_msg($service_id,$param_refid,$param_email,$payment_type,$param_msisdn,'','','','','','','',$param_price); 
+billpayment_prepare.php:            $reqstr = $ipps->bill_payment_request_msg($service_id,$param_refid,$param_email,$payment_type,$param_msisdn,'','','','','','','',$param_price); 
+billpayment_prepare.php:            $reqstr = $ipps->bill_payment_request_msg($service_id,$param_refid,$param_email,$payment_type,$param_msisdn,$param_ref1,'','','','','','',$param_price); 
+billpayment_prepare.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+billpayment_prepare.php:        $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);
+billpayment_prepare.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+billpayment_prepare.php:        $result_array = $ipps->extractresult($resstr);
+billpayment_prepare.php:            $payment->updatepaymenttxnid($param_refid,$result_array['txn_id']);            
+billpayment_prepare.php:            $reqstr = $ipps->bill_payment_verify_msg($service_id,$param_refid,$param_email,$payment_type,$param_msisdn,'','','','','','','',$param_price); 
+billpayment_prepare.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+billpayment_prepare.php:            $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);
+billpayment_prepare.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+billpayment_prepare.php:            $result_array = $ipps->extractresult($resstr);
+billpayment_prepare.php:               $error_mesg=$payment->geterrormesg('bill_payment.php','IPPS',$result_array['status']);
+billpayment_prepare.php:               $payment->updatepaymentstatusfail($param_refid);
+billpayment_prepare.php:               // Refund E-wallet to be coded
+billpayment_prepare.php:               $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));
+billpayment_prepare.php:            $error_mesg=$payment->geterrormesg('bill_payment.php','IPPS',$result_array['status']);
+billpayment_prepare.php:            $payment->updatepaymentstatusfail($param_refid);
+billpayment_prepare.php:               // Refund E-wallet to be coded
+billpayment_prepare.php:            $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));
+billpayment_prepare.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+ewalletDeduct.php:header('Content-Type: application/json; charset=utf-8');
+ewalletDeduct.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+ewalletDeduct.php:                $mprice = $member->getprice($param_email);
+ewalletDeduct.php:			$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+ewalletDeduct.php:                        $refcode = $String->GenKey("12");
+ewalletDeduct.php:			$servicename = $eservice->gettitle ($param_code);
+ewalletDeduct.php:                        $partnercode = $eservice->getpaymentmap ($param_code);
+ewalletDeduct.php:                             $resultpayment = $payment->insert($partnercode,$param_code,$servicename,'I',$param_price,0,$param_price,$refcode,$new_array['txn_id'],"",'N',$param_email,$param_email,'',$param_ref1,'1');
+ewalletDeduct.php:                             $resultpayment = $payment->insert($partnercode,$param_code,$servicename,'I',$param_price,0,$param_price,$refcode,$new_array['txn_id'],"",'N',$param_email,$param_email,'',$param_ref1,'0');
+ewalletDeduct.php:		$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+ewalletpaycancel.php:header('Content-Type: application/json; charset=utf-8');
+ewalletpaycancel.php:$request=$payment->loggingandroid($_REQUEST);
+ewalletpaycancel.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+ewalletpaycancel.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+ewalletpaycancel.php:        $memberid = $member->getcodebyemail($param_email);
+ewalletpaycancel.php:        $reqstr = $ipps->ewallet_deduct_refund_msg($memberid,$param_refid,$param_txnid);
+ewalletpaycancel.php:        $urlstr = "https://www.payforu.com/WebService/payforuservice.svc/EWalletCancelRequest"; // E-wallet Deduct Confirm
+ewalletpaycancel.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+ewalletpaycancel.php:        $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //E-wallet Deduct Confirm API        
+ewalletpaycancel.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+ewalletpaycancel.php:        $result_array = $ipps->extractresult($resstr); 
+ewalletpaycancel.php:            $reqstr = $ipps->ewallet_deduct_refund_confirm_msg($memberid,$param_txnid);
+ewalletpaycancel.php:            $urlstr = "https://www.payforu.com/WebService/payforuservice.svc/EWalletCancelConfirmRequest"; // E-wallet Deduct Confirm
+ewalletpaycancel.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+ewalletpaycancel.php:            $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //E-wallet Deduct Confirm API        
+ewalletpaycancel.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+ewalletpaycancel.php:            $result_array = $ipps->extractresult($resstr); 
+ewalletpaycancel.php:            $payment->updatepaymentremark($remarktxt,$param_refid);
+ewalletpaycancel.php:            // Sync E-wallet Pay for U
+ewalletpaycancel.php:            $reqstr = $ipps->direct_customer_info($memberid);
+ewalletpaycancel.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+ewalletpaycancel.php:            $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //Customer Info API
+ewalletpaycancel.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+ewalletpaycancel.php:            $result_array = $ipps->extractresult($resstr);
+ewalletpaycancel.php:               $payment->adjustcardnobyemail($param_email,$balance_new);
+ewalletpaycancel.php:            $havepayment = $payment->checkpayment($param_refid,$param_email);
+ewalletpaycancel.php:                $paymentarray = $payment->getpaymentdata($param_refid,$param_email);
+ewalletpaycancel.php:                $payment->refundcardnobyemail($param_email,$tt_total);
+ewalletpaycancel.php:            $payment->updatepaymentremark($remarktxt,$param_refid);
+ewalletpaycancel.php:            $payment->updatepaymentremark($remarktxt,$param_refid);
+ewalletpaycancel.php:            #$error_mesg=$payment->geterrormesg('e_wallet_request.php','IPPS',$result_array['status']);
+ewalletpaycancel.php:            #$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));     
+ewalletpaycancel.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+ewalletpayconfirm.php:header('Content-Type: application/json; charset=utf-8');
+ewalletpayconfirm.php:$request=$payment->loggingandroid($_REQUEST);
+ewalletpayconfirm.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+ewalletpayconfirm.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+ewalletpayconfirm.php:        $memberid = $member->getcodebyemail($param_email);
+ewalletpayconfirm.php:        $reqstr = $ipps->ewallet_deduct_request_confirm_msg($memberid,$param_txnid,$param_otp);
+ewalletpayconfirm.php:        $urlstr = "https://www.payforu.com/WebService/payforuservice.svc/merchantpaymentconfirm"; // E-wallet Deduct Confirm
+ewalletpayconfirm.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+ewalletpayconfirm.php:        $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //E-wallet Deduct Confirm API        
+ewalletpayconfirm.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+ewalletpayconfirm.php:        $result_array = $ipps->extractresult($resstr); 
+ewalletpayconfirm.php:            // Sync E-wallet Pay for U
+ewalletpayconfirm.php:            $reqstr = $ipps->direct_customer_info($memberid);
+ewalletpayconfirm.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+ewalletpayconfirm.php:            $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //Customer Info API
+ewalletpayconfirm.php:            $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+ewalletpayconfirm.php:            $result_array = $ipps->extractresult($resstr);
+ewalletpayconfirm.php:               $payment->adjustcardnobyemail($param_email,$balance_new);
+ewalletpayconfirm.php:            $havepayment = $payment->checkpayment($param_refid,$param_email);
+ewalletpayconfirm.php:            $memberid = $member->getcodebyemail($param_email);
+ewalletpayconfirm.php:                $paymentarray = $payment->getpaymentdata($param_refid,$param_email);
+ewalletpayconfirm.php:                $payment->usedcardnobyemail($param_email,$tt_total); 
+ewalletpayconfirm.php:            $error_mesg=$payment->geterrormesg('e_wallet_request.php','IPPS',$result_array['status']);
+ewalletpayconfirm.php:            $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));     
+ewalletpayconfirm.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+ewalletpayrequest.php:header('Content-Type: application/json; charset=utf-8');
+ewalletpayrequest.php:$request=$payment->loggingandroid($_REQUEST);
+ewalletpayrequest.php:$refcode = $String->GenKey("16"); 
+ewalletpayrequest.php:$resultlogging = $payment->insertlog($refcode,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+ewalletpayrequest.php:	$havemember = $member->havemember($param_email);
+ewalletpayrequest.php:        $sercharge = $eservice->getecharge($param_code);       
+ewalletpayrequest.php:        $memberid = $member->getcodebyemail($param_email);
+ewalletpayrequest.php:        $reqstr = $ipps->direct_customer_info($memberid); 	
+ewalletpayrequest.php:        $resultlogging = $payment->insertlog($refcode,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+ewalletpayrequest.php:        $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //Customer Info API         
+ewalletpayrequest.php:        $resultlogging = $payment->insertlog($refcode,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+ewalletpayrequest.php:        $result_array = $ipps->extractresult($resstr);
+ewalletpayrequest.php:            $reqstr = $ipps->ewallet_deduct_request_msg($memberid,$refcode,$productlist,$totalprice);
+ewalletpayrequest.php:            $resultlogging = $payment->insertlog($refcode,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr));
+ewalletpayrequest.php:            $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //Ewallet Deduct API         
+ewalletpayrequest.php:            $resultlogging = $payment->insertlog($refcode,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr));
+ewalletpayrequest.php:            $result_array = $ipps->extractresult($resstr);
+ewalletpayrequest.php:                      #$servicename = $eservice->gettitle ($param_code);
+ewalletpayrequest.php:                      #$partnercode = $eservice->getpaymentmap ($param_code);
+ewalletpayrequest.php:                      #$resultpayment = $payment->insert($partnercode,$param_code,$servicename,'I',$param_price,$sercharge,$totalprice,$refcode,$result_array['txnid'],"",'N',$param_email,$param_email,'',$param_msisdn,'0');
+ewalletpayrequest.php:                      $error_mesg=$payment->geterrormesg('e_wallet_request.php','IPPS',$result_array['status']);
+ewalletpayrequest.php:                      $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));         
+ewalletpayrequest.php:	       $error_mesg=$payment->geterrormesg('direct_customer_info.php','IPPS',$result_array['result']);
+ewalletpayrequest.php:               $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg)); 		
+ewalletpayrequest.php:$resultlogging = $payment->insertlog($refcode,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+geteservicepayconfirm.php:header('Content-Type: application/json; charset=utf-8');
+geteservicepayconfirm.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+geteservicepayconfirm.php:	$havepayment = $payment->checkpayment($param_refcode,$param_email);
+geteservicepayconfirm.php:        $paymentarray = $payment->getpaymentdata($param_refcode,$param_email);
+geteservicepayconfirm.php:                //$servicename = $eservice->gettitle ($param_code);
+geteservicepayconfirm.php:                //$partnercode = $eservice->getpaymentmap ($param_code);
+geteservicepayconfirm.php:                  //$payment->updatepaymentstatus($tran_id); 
+geteservicepayconfirm.php:                   //$payment->usedcardnobyemail($tt_email,$tt_total);
+geteservicepayconfirm.php:                  //$payment->updatepaymentstatusfail($tran_id); 
+ipps.php:                        $refdate = date("Y-m-d");
+ipps.php:                        $refdate = date("Y-m-d");
+ipps.php:                        $refdate = date("Y-m-d H:i:s");  
+ipps.php:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php:                        $refdate = date("Y-m-d H:i:s");
+ipps.php:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php.bak:                        $refdate = date("Y-m-d");
+ipps.php.bak:                        $refdate = date("Y-m-d");
+ipps.php.bak:                        $refdate = date("Y-m-d H:i:s");  
+ipps.php.bak:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php.bak:                        $refdate = date("Y-m-d H:i:s");
+ipps.php.bak:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php.bak:                        $reqdate = date("Y-m-d H:i:s");
+ipps.php.bak:                        $reqdate = date("Y-m-d H:i:s");
+mobiletopup_commit.php:header('Content-Type: application/json; charset=utf-8');
+mobiletopup_commit.php:$request=$payment->loggingandroid($_REQUEST);
+mobiletopup_commit.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$request);
+mobiletopup_commit.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+mobiletopup_commit.php:        $havepayment = $payment->checkpayment($param_refid,$param_email);
+mobiletopup_commit.php:        $memberid = $member->getcodebyemail($param_email); 
+mobiletopup_commit.php:        $paymentarray = $payment->getpaymentdata($param_refid,$param_email);
+mobiletopup_commit.php:        $reqstr = $ipps->mobile_topup_request_msg($memberid,$service_id,$param_refid,$tt_price,$tt_msisdn);
+mobiletopup_commit.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+mobiletopup_commit.php:        $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);
+mobiletopup_commit.php:        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+mobiletopup_commit.php:        $result_array = $ipps->extractresult($resstr); 
+mobiletopup_commit.php:               $payment->updatepaymentstatus($param_refid);
+mobiletopup_commit.php:               #$payment->usedcardnobyemail($param_email,$tt_total); 
+mobiletopup_commit.php:               $error_mesg=$payment->geterrormesg('mobile_topup.php','IPPS',$result_array['status']);
+mobiletopup_commit.php:               $payment->updatepaymentstatusfail($param_refid);
+mobiletopup_commit.php:               $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($error_mesg));
+mobiletopup_commit.php:	       $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+mobiletopup_commit.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+mobiletopup.php:header('Content-Type: application/json; charset=utf-8');
+mobiletopup.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+mobiletopup.php:	$havemember = $member->havemember($param_email);
+mobiletopup.php:                $mprice = $member->getprice($param_email);
+mobiletopup.php:			$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+mobiletopup.php:                        $refcode = $String->GenKey("12");
+mobiletopup.php:			$servicename = $eservice->gettitle ($param_code);
+mobiletopup.php:                        $partnercode = $eservice->getpaymentmap ($param_code);
+mobiletopup.php:                             $resultpayment = $payment->insert($partnercode,$param_code,$servicename,'I',$param_price,0,$param_price,$refcode,$new_array['txn_id'],"",'N',$param_email,$param_email,'',$param_ref1,'1');
+mobiletopup.php:                             $resultpayment = $payment->insert($partnercode,$param_code,$servicename,'I',$param_price,0,$param_price,$refcode,$new_array['txn_id'],"",'N',$param_email,$param_email,'',$param_ref1,'0');
+mobiletopup.php:		$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+mobiletopup_prepare.php:header('Content-Type: application/json; charset=utf-8');
+mobiletopup_prepare.php:$request=$payment->loggingandroid($_REQUEST);
+mobiletopup_prepare.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+mobiletopup_prepare.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+mobiletopup_prepare.php:	$servicename = $eservice->gettitle ($param_code);
+mobiletopup_prepare.php:        $partnercode = $eservice->getpaymentmap ($param_code);
+mobiletopup_prepare.php:        $resultpayment = $payment->insert($partnercode,$param_code,$servicename,'I',$param_price,$param_sercharge,$param_totalprice,$param_refid,$param_txnid,"",'N',$param_email,$param_email,'',$param_msisdn,'0');
+mobiletopup_prepare.php:        $payment->updatepaymenttxnid($param_refid,$param_txnid); 
+mobiletopup_prepare.php:$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+respIPPS.php:header('Content-Type: text/html; charset=utf-8');
+respIPPS.php:$request=$payment->loggingandroid($_REQUEST);
+respIPPS.php:$resultlogging = $payment->insertlog($param_refid,'IPPS','FE:REQ',$modulename,$String->utf82tis($request));
+respIPPS.php:$paymentarray = $payment->getpaymentdatabyrefcode($param_refid);
+respIPPS.php:   #$payment->updatepaymentstatus($param_id);
+respIPPS.php:   #$payment->usedcardnobyemail($tt_email,$tt_total);
+respIPPS.php:    $payment->updatepaymentstatusfail($param_refid);
+respIPPS.php:    $memberid = $member->getcodebyemail($tt_email);
+respIPPS.php:    $reqstr = $ipps->ewallet_deduct_refund_msg($memberid,$param_refid,$tt_txnid);
+respIPPS.php:    $urlstr = "https://test.payforu.com/WebService/payforuservice.svc/EWalletCancelRequest"; // E-wallet Deduct Confirm
+respIPPS.php:    $resultlogging = $payment->insertlog($param_refid,$tt_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+respIPPS.php:    $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //E-wallet Deduct Confirm API
+respIPPS.php:    $resultlogging = $payment->insertlog($param_refid,$tt_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+respIPPS.php:    $result_array = $ipps->extractresult($resstr);
+respIPPS.php:            $reqstr = $ipps->ewallet_deduct_refund_confirm_msg($memberid,$tt_txnid);
+respIPPS.php:            $urlstr = "https://test.payforu.com/WebService/payforuservice.svc/EWalletCancelConfirmRequest"; // E-wallet Deduct Confirm
+respIPPS.php:            $resultlogging = $payment->insertlog($param_refid,$tt_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+respIPPS.php:            $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //E-wallet Deduct Confirm API
+respIPPS.php:            $resultlogging = $payment->insertlog($param_refid,$tt_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+respIPPS.php:            $result_array = $ipps->extractresult($resstr);
+respIPPS.php:            $payment->updatepaymentremark($remarktxt,$param_refid);
+respIPPS.php:             // Sync E-wallet Pay for U
+respIPPS.php:             $reqstr = $ipps->direct_customer_info($memberid);
+respIPPS.php:             $resultlogging = $payment->insertlog($param_refid,$tt_email,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+respIPPS.php:             $resstr = $ipps->ipps_submit_req($urlstr,$reqstr);  //Customer Info API
+respIPPS.php:             $resultlogging = $payment->insertlog($param_refid,$tt_email,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+respIPPS.php:             $result_array = $ipps->extractresult($resstr);
+respIPPS.php:               $payment->adjustcardnobyemail($tt_email,$balance_new);
+respIPPS.php:                  $payment->updatepaymentremark($remarktxt,$param_refid);
+respIPPS.php:            $payment->updatepaymentremark($remarktxt,$param_refid);
+respIPPS.php:$resultlogging = $payment->insertlog($param_refid,'IPPS','FE:RES',$modulename,$String->utf82tis($respstr));
+resp_reg_IPPS.php:header('Content-Type: text/html; charset=utf-8');
+resp_reg_IPPS.php:$request=$payment->loggingandroid($_REQUEST);
+resp_reg_IPPS.php:$resultlogging = $payment->insertlog($param_refid,'IPPS','FE:REQ',$modulename,$String->utf82tis($request));
+resp_reg_IPPS.php:    foundmember = $member->havememberbycodeIPPS($param_memberid);
+resp_reg_IPPS.php:            $result = $member->updatememberstatus_success($param_memberid);
+resp_reg_IPPS.php:            $result = $member->updatememberstatus_fail($param_memberid);
+resp_reg_IPPS.php:$resultlogging = $payment->insertlog($param_refid,'IPPS','FE:RES',$modulename,$String->utf82tis($respstr));
+TopupOne2Call.php:header('Content-Type: application/json; charset=utf-8');
+TopupOne2Call.php:	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+TopupOne2Call.php:    $ans = $paymentmpay->checkPaymentRecord($param_refid,$param_email);
+TopupOne2Call.php:		//"https://saichon-beauty.ais.co.th:8002/mediator/mpayservice?channelName=MERCHANT&command=One2Call&shoppingChannel=MERCHANT&serviceId=1100150000000225&appName=12callAgent&parameter=12CALL_AGENT_OTHER&mobileNo=0870182314&payeeMobile=0899833338&pin=0405&amount=10";
+TopupOne2Call.php:		$responsedata = $paymentmpay->extractdata(trim($server_output));
+TopupOne2Call.php:		$status = (string) $xml->status;
+TopupOne2Call.php:		$detail = (string) $xml->detail;
+TopupOne2Call.php:		$responsecode = (string) $xml->responsecode;
+TopupOne2Call.php:		$tranId = (string) $xml->tranId;
+TopupOne2Call.php:		$processStatus = (string) $xml->processStatus;
+TopupOne2Call.php:			   $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+TopupOne2Call.php:	   $dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+TopupOne2Call.php:$paymentmpay->updateRecord ($param_msisdn,$param_price,$param_refid,$param_email,$tranId,$status);

@@ -1,0 +1,51 @@
+front_memberadd_exec.php:		if ($payment->getcardno($param_paymentcardno) > 0) {
+front_nonmemberadd_exec.php:	if ($payment->getcardno($param_paymentcardno) > 0) {
+front_onlinememberadd_exec.php:	if ($payment->getcardno($param_paymentcardno) > 0) {
+front_onlinememberadd_form.php:	$cardno = $payment->getcardcodefromid($m_code);
+front_payment_exec_ipps.php:$membercode = $payment->getmembercodefromcardno($param_cardcode);
+front_payment_exec_ipps.php:$memberresult = $payment->checkfirstpaymentandupdate($memberemail);
+front_payment_exec_ipps.php:        $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+front_payment_exec_ipps.php:        $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+front_payment_exec_ipps.php:                $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+front_payment_exec_ipps.php:                $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+front_payment_exec_ipps.php:                                        $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+front_payment_exec_ipps.php:                                        $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+front_payment_exec_ipps.php:                                                $payment->insert ('TWZ','',strtoupper($param_cardcode),'A',$param_price,'0',$param_price,$param_ref,$ordernumber,$refid_ipps,'N',$memberemail,$_SESSION['TWZUsername'],'TWZ','','1');
+front_payment_exec_ipps.php:           					 $resultlogging = $payment->insertlog($refcode,$memberemail,'BE:REQ',$module_name_detail,$String->utf82tis($reqstr)); //Logging
+front_payment_exec_ipps.php:            					$resultlogging = $payment->insertlog($refcode,$memberemail,'BE:RES',$module_name_detail,$String->utf82tis($resstr)); //Logging
+front_payment_exec_ipps.php:             					  $payment->adjustcardnobyemail($memberemail,$result_array['account_balance']);
+front_payment_exec_ipps.php:                                                $payment->insert ('TWZ','',strtoupper($param_cardcode),'A',$param_price,'0',$param_price,$param_ref,$ordernumber,'Error 1','N',$memberemail,$_SESSION['TWZUsername'],'TWZ','','9');
+front_payment_exec_ipps.php:                                                $payment->insert ('TWZ','',strtoupper($param_cardcode),'A',$param_price,'0',$param_price,$param_ref,$ordernumber,'Error 2','N',$memberemail,$_SESSION['TWZUsername'],'TWZ','','9');
+front_payment_exec_ipps.php:                $payment->insert ('TWZ','',strtoupper($param_cardcode),'A',$param_price,'0',$param_price,$ref,$ordernumber,'Error 3','N',$memberemail,$_SESSION['TWZUsername'],'TWZ','','9');
+front_payment_exec_ipps.php:                $payment->insert ('TWZ','',strtoupper($param_cardcode),'A',$param_price,'0',$param_price,$param_ref,$ordernumber,'Error 4','N',$memberemail,$_SESSION['TWZUsername'],'TWZ','','9');
+front_payment_exec.php:$membercode = $payment->getmembercodefromcardno($param_cardcode);
+front_payment_exec.php:$memberresult = $payment->checkfirstpaymentandupdate($memberemail);
+front_payment_exec.php:$payment->insert ('TWZ','',strtoupper($param_cardcode),'A',$param_price,'0',$param_price,$param_ref,$ordernumber,$param_ref2,'N',$memberemail,$_SESSION['TWZUsername'],'TWZ','','1');
+front_payment_exec.php:$payment->updatecardno ($membercode,$param_price);
+front_payment_form2_ipps.php:$membercode = $payment->getmembercodefromcardno($param_cardcode);
+front_payment_form2_ipps.php:	$cardno = $payment->getcardcodefromid($m_code);
+front_payment_form2.php:$membercode = $payment->getmembercodefromcardno($param_cardcode);
+front_payment_form2.php:	$cardno = $payment->getcardcodefromid($m_code);
+front_payment_print.php:	$data = $payment->getdetailbyref($param_orid);
+front_paymentview_form.php:$mdata = $payment->getdatafromkeyword($param_keyword);
+front_payment_view_ipps.php:$membercode = $payment->getmembercodefromcardno($param_cardcode);
+front_payment_view.php:$membercode = $payment->getmembercodefromcardno($param_cardcode);
+member_book_show.php:$totalrecords = $payment->getbookcount($param_email);
+member_book_show.php:$memberdata = $payment->getbook($param_email,$min,$maxrec);
+memberedit_form.php:$cardno = $payment->getcardcodefromid($db_code);
+m-reportdealer_exec_csv.php:		 if ($payment->getfirstwalletdata($dbs_email,$dbs_code)) {
+m-reportdealer_exec.php:		 if ($payment->getfirstwalletdata($dbs_email,$dbs_code)) {
+payment_refund_exec.php:	$membercode = $payment->getmembercodefromcardno($db_detail);
+payment_refund_exec.php:    $payment->insert ('','','ปรับปรุงรายการ','R',$db_price,'',$db_price,$db_ref,$db_ref1.'-1',$db_ref2,'N',$db_email,$_SESSION['TWZUsername'],$db_station,'','1');
+payment_refund_exec.php:	$payment->updaterefund ($db_ref1);
+payment_refund_exec.php:	$payment->usedcardno ($membercode, $db_price); // ลบจำนวนเงิน
+report_box_form.php:$paylist = $payment->getpaylist('');
+reportdealer_exec_csv.php:				     $firstbuy = $payment->getfirstbuy($dbs_email);
+reportdealer_exec.php:				     $firstbuy = $payment->getfirstbuy($dbs_email);
+report_dev_step2.php:   $applist = $payment->getapplist($partnercode);
+report_dev_step2.php:   $applist = $payment->getapplist($partnercode);
+report_exec_csv.php:				     $firstbuy = $payment->getfirstbuy($dbs_email);
+report_exec.php:				     $firstbuy = $payment->getfirstbuy($dbs_email);
+thubedit_form.php:$data = $payment->getcardcodedatafromid($param_id);
+thub_view.php:$totalrecords = $payment->getlistcount('desc');
+thub_view.php:$memberdata = $payment->getlist('desc',$min,$maxrec);
