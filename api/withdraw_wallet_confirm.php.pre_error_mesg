@@ -1,0 +1,81 @@
+<?php
+include '../leone.php';
+include '../admin/controller/eservice.php';
+include '../admin/controller/payment.php';
+include '../admin/controller/member.php';
+header('Content-Type: application/json; charset=utf-8');
+$member = new member();
+$eservice = new eservice();
+$payment = new payment();
+$modulename='withdraw_wallet_confirm.php';
+$param_email = (!empty($_REQUEST["email"])) ? $_REQUEST["email"] : "";
+$param_refid = (!empty($_REQUEST["refid"])) ? $_REQUEST["refid"] : "";
+$param_txnid = (!empty($_REQUEST["txnid"])) ? $_REQUEST["txnid"] : "";
+$param_otp = (!empty($_REQUEST["otp"])) ? $_REQUEST["otp"] : "";
+$param_price = (!empty($_REQUEST["price"])) ? $_REQUEST["price"] : "";
+#$MYURL1 = "https://test.payforu.com/WebService/payforuservice.svc/APIDirectWithDrawConfirmRequest";
+$MYURL1 = "https://www.payforu.com/WebService/payforuservice.svc/APIDirectWithDrawConfirmRequest";
+
+
+$request=$payment->loggingandroid($_REQUEST);
+$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$String->utf82tis($request));
+
+if ($param_otp=='' || $param_email=='' || $param_txnid=='') {
+	$msg = 'ส่ง parameter มาไม่ครบค่ะ';
+	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+}else{
+	$havemember = $member->havemember($param_email);
+	if ($havemember) {
+        $mprice = $member->getprice($param_email);
+		if ($mprice<$param_price) {
+			$msg = "ยอดเงินของท่าน มีจำนวนไม่พอกับราคาสินค้า หรือบริการที่ท่านต้องการ กรุณาเติมเงินเพิ่มด้วยค่ะ";
+			$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+		}else{
+                     $ch = curl_init();
+                      #$merchantid = "200000001777";
+                      $merchantid = "200000006523";
+                      $ref_date = date("Y-m-d H:i:s");
+                      #$secretcode = "twz123456";
+                      $secretcode = "WLIKPYIlzDKMlx3Em0S9R3YK1nXqtt38qT8GomsHsrB73FA4xq";
+                      $membercode = $member->getcodefromemail($param_email);
+                      $myreq = "merchantid=".$merchantid."&membercode=".$membercode."&ref_id=".$param_refid."&txnid=".$param_txnid."&otp=".$param_otp."&requestdate=".$ref_date;                       
+                      //error_log("withdraw confirm wallet IPPS => ".$myreq."\n",3,"/tmp/mylog.txt"); 
+                      $hashstring = $merchantid.$membercode.$param_refid.$param_txnid.$param_otp.$ref_date.$secretcode;
+                      $mdhashstring = md5($hashstring);
+                      $myreq = $myreq."&hash=".$mdhashstring;
+                      curl_setopt($ch,CURLOPT_URL,$MYURL1);
+                      curl_setopt($ch,CURLOPT_POST,1);
+                      curl_setopt($ch,CURLOPT_POSTFIELDS,$myreq);
+                      curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+                      #curl_setopt($ch,CURLOPT_POST,1);
+                      //error_log("withdraw confirm wallet IPPS hashstring => ".$hashstring."\n",3,"/tmp/mylog.txt");
+                      //error_log("withdraw confirm wallet IPPS mdhashstring => ".$mdhashstring."\n",3,"/tmp/mylog.txt");
+                      $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$modulename,$String->utf82tis($myreq)); 
+                      $server_output = curl_exec ($ch);
+                      curl_close($ch); 
+                      //error_log("withdraw confirm wallet IPPS server_output => ".$server_output."\n",3,"/tmp/mylog.txt");
+                      $new_array = $payment->extractresult(trim($server_output));
+                      //error_log("withdraw wallet IPPS array output => ".$new_array['status']."\n",3,"/tmp/mylog.txt");
+                      $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$modulename,$String->utf82tis(json_encode($new_array)));  
+                      if ($new_array['status'] == '01')
+                      {
+                           $payment->usedcardnobyemail($param_email,$param_price); 
+                           $payment->updatepaymentstatus($param_refid);  
+                           $dataarray = array("result"=>"OK","result_desc"=>"");
+	              }	
+	              else{
+                           $payment->updatepaymentstatusfail($param_refid);  
+		           $dataarray = array("result"=>"FAIL","result_desc"=>"Failed with code ".$new_array['status']);
+	              }
+                }
+	}else{
+		$msg = "สมาชิก ไม่ได้รับอนุญาติให้บริการค่ะ";
+		$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+	}
+}
+$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+$carddata = array ("resultdata"=>$dataarray);
+$resultxml = json_encode($carddata,JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+print $resultxml;
+?>
+

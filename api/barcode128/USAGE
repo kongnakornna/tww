@@ -1,0 +1,30 @@
+
+ USAGE of provided library:
+ 
+       require_once ('code128barcode.class.php')
+       $barcode = new code128barcode();
+       
+       $code = $barcode->output('code string');
+       ...
+       $code = $barcode->output('another code string');
+       ...
+       $barcode->nozerofill = true;
+       $barcode->unoptimized = true;
+       $code = $barcode->output('laposte colissimo code string');
+       ...
+
+ $code is a (decimal) 1 and 0 suit, '1' represents black bar
+ and 0 white.
+
+ ten 0 before and after string represents silent zones. Note
+ it can be not sufficient, as the minimal silent zone is
+ 6.35mm (1/4 ").
+ These leading and trailing zero can be disabled by setting
+ $barcode->nozerofill = true;
+
+ Additionnaly, there is a variable "unoptimized". When setting
+ it to false, barcodes coplies with "french laposte colissimo"
+ standard.
+
+ examples are provided for fpdf and gd.
+

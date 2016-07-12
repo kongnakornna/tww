@@ -1,0 +1,72 @@
+<?php
+include '../leone.php';
+include '../admin/controller/eservice.php';
+include '../admin/controller/payment.php';
+include '../admin/controller/member.php';
+header('Content-Type: application/json; charset=utf-8');
+$member = new member();
+$eservice = new eservice();
+$payment = new payment();
+$param_email = (!empty($_REQUEST["email"])) ? $_REQUEST["email"] : "";
+$param_price = (!empty($_REQUEST["price"])) ? $_REQUEST["price"] : "";
+$MYURL1 = "https://test.payforu.com/WebService/payforuservice.svc/APIDirectWithDrawRequest";
+if ($param_price=='' || $param_email=='') {
+	$msg = 'ส่ง parameter มาไม่ครบค่ะ';
+	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+}else{
+	$havemember = $member->havemember($param_email);
+	if ($havemember) {
+        $mprice = $member->getprice($param_email);
+		if ($mprice<$param_price) {
+			$msg = "ยอดเงินของท่าน มีจำนวนไม่พอกับราคาสินค้า หรือบริการที่ท่านต้องการ กรุณาเติมเงินเพิ่มด้วยค่ะ";
+			$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+		}else{
+                     $ch = curl_init();
+                      $merchantid = "200000001777";
+                      $ref_date = date("Y-m-d H:i:s");
+                      $secretcode = "twz123456";
+                      $refcode = $String->Genkey("12");
+                      $amount = $param_price;
+                      $membercode = $member->getcodefromemail($param_email);
+                      $myreq = "merchantid=".$merchantid."&membercode=".$membercode."&ref_id=".$refcode."&amount=".$param_price."&requestdate=".$ref_date;                       
+                      error_log("withdraw wallet IPPS => ".$myreq."\n",3,"/tmp/mylog.txt"); 
+                      $hashstring = $merchantid.$membercode.$refcode.$param_price.$ref_date.$secretcode;
+                      $mdhashstring = md5($hashstring);
+                      $myreq = $myreq."&hash=".$mdhashstring;
+                      curl_setopt($ch,CURLOPT_URL,$MYURL1);
+                      curl_setopt($ch,CURLOPT_POST,1);
+                      curl_setopt($ch,CURLOPT_POSTFIELDS,$myreq);
+                      curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+                      #curl_setopt($ch,CURLOPT_POST,1);
+                      error_log("withdraw wallet IPPS hashstring => ".$hashstring."\n",3,"/tmp/mylog.txt");
+                      error_log("withdraw wallet IPPS mdhashstring => ".$mdhashstring."\n",3,"/tmp/mylog.txt");
+                      $server_output = curl_exec ($ch);
+                      curl_close($ch); 
+                      error_log("withdraw wallet IPPS server_output => ".$server_output."\n",3,"/tmp/mylog.txt");
+                      $new_array = $payment->extractresult($server_output);
+                      error_log("withdraw wallet IPPS array output => ".$new_array['status']."\n",3,"/tmp/mylog.txt");
+                      error_log("withdraw wallet IPPS array output => ".$new_array['total_am']."\n",3,"/tmp/mylog.txt");
+                      error_log("withdraw wallet IPPS array output => ".$new_array['confirmc']."\n",3,"/tmp/mylog.txt");
+                      if ($new_array['status'] == '01')
+                      {
+                             $memberarray = $member->getdatabyemail($param_email);
+                             if (count($memberarray) >0) {
+                                 $bankcode = $memberarray[0]['m_bankcode'];   
+                                 $bankname = $String->tis2utf8($memberarray[0]['m_bankname']);   
+                             } 
+                             $dataarray = array("result"=>"OK","result_desc"=>"","bankcode"=>$bankcode,"bankname"=>$bankname,"price"=>$param_price,"refid"=>$refcode,"txnid"=>$new_array['txnid'],"fee"=>$new_array['fee'],"totalamount"=>$new_array['total_am'],"confirmcode"=>$new_array['confirmc']);
+	              }	
+	              else{
+		           $dataarray = array("result"=>"FAIL","result_desc"=>"Error Code ".$new_array['status']);
+	              }
+                }
+	}else{
+		$msg = "สมาชิก ไม่ได้รับอนุญาติให้บริการค่ะ";
+		$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg));
+	}
+}
+$carddata = array ("resultdata"=>$dataarray);
+$resultxml = json_encode($carddata,JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+print $resultxml;
+?>
+

@@ -1,0 +1,52 @@
+<?php
+include '../../leone.php';
+include '../../admin/controller/payment_mpay.php';
+include '../../admin/controller/payment.php';
+include '../../admin/controller/member.php';
+include '../../admin/controller/eservice.php';
+include './mpay.config.php';
+include './mpay.php';
+include '../IPPS/ipps.php';
+header('Content-Type: application/json; charset=utf-8');
+$paymentmpay = new paymentmpay();
+$payment = new payment();
+$member = new member();
+$eservice = new eservice();
+$mpay = new mpay();
+$param_refid = $_REQUEST['refid'];
+$param_code = $_REQUEST['code'];
+$param_sessionid = $_REQUEST['sessionid'];
+$modulename='ConfirmBarcode.php[MPAY]';
+#error_log("Check balance process\n",3,"/tmp/mylog.txt");  
+$request=$payment->loggingandroid($_REQUEST);
+$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:REQ',$modulename,$request);
+if ($param_refid=='' || $param_code =='' || $param_sessionid=='') {
+        $msg = 'Êè§ parameter ÁÒäÁè¤Ãº¤èÐ';
+	$dataarray = array("result"=>"FAIL","result_desc"=>$String->tis2utf8($msg),"refid"=>"");
+}
+else{
+        $MASTERMOBILE = '0934145546';
+        $param_serviceid = $eservice->getserviceid($param_code);
+        #$MPAYURL = 'https://saichon-beauty.ais.co.th:8002/mediator/mpayservice'; 
+        $MPAYURL = 'https://mediator.mpay.co.th/mediator/mpayservice'; 
+        $module_name_detail=$modulename."GENERALBILLN2"; 
+        $payment->updatepaymenttxnid($param_refid,$param_sessionId); 
+        $mystr = $mpay->general_bill2_request_msg($MASTERMOBILE,$param_serviceid,$param_sessionid);
+        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:REQ',$module_name_detail,$mystr);
+        $resultstr = $mpay->mpay_submit_req($MPAYURL,$mystr);
+        $resultlogging = $payment->insertlog($param_refid,$param_email,'BE:RES',$module_name_detail,$resultstr);
+        $result_array = $mpay->extractresult($resultstr);          
+            if ($result_array['status'] == 'ok') {
+                $payment->updatepaymentstatus($param_refid); 
+                $dataarray = array("result"=>"OK","result_desc"=>"");
+           }
+           else{
+                $payment->updatepaymentstatusfail($param_refid);	
+               	$dataarray = array("result"=>"FAIL","result_desc"=>($result_array['detail']));
+           }
+}
+$resultlogging = $payment->insertlog($param_refid,$param_email,'FE:RES',$modulename,$String->utf82tis(json_encode($dataarray)));
+$bookdata = array ("resultdata"=>$dataarray);
+$resultxml = json_encode($bookdata,JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+print $resultxml;
+?>

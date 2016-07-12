@@ -1,0 +1,19 @@
+<?php
+include '../leone.php';
+include '../admin/controller/payment_new.php';
+$payment = new payment();
+$t=time();
+#echo $t."\n";
+#date("U",$t)."\n";
+#echo (int)($t/600)."\n";
+$divtime=(int)($t/600);
+echo ($divtime*600)."\n";
+$newtime=$divtime*600;
+$begintime=$newtime-1200;
+$endtime=$newtime-600;
+#date('Y-m-d H:i:s',$newtime)."\n";
+$sdate=date('Y-m-d H:i:s',$begintime);
+$edate=date('Y-m-d H:i:s',$endtime);
+$result=$payment->getpaymentwait($sdate,$edate);
+print_r($result);
+?>
