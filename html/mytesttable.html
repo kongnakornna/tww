@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;    
+}
+</style>
+</head>
+<body>
+
+<h2>Cell that spans two columns:</h2>
+
+<table style="width:100%">
+  <tr>
+    <th rowspan="2">Name</th>
+    <th rowspan="2">Telephone</th>
+    <th rowspan="2">address</th>
+    <th colspan="2">Type</th>
+    <th colspan="2">Type</th>
+    <th colspan="2">Type</th>
+  </tr>
+  <tr>
+    <th colspan="1"> Bill Gates</td>
+    <th colspan="1"> Bill Gates</td>
+    <th colspan="1"> Bill Gates</td>
+    <th colspan="1"> Bill Gates</td>
+    <th colspan="1"> Bill Gates</td>
+    <th colspan="1"> Bill Gates</td>
+  <tr>
+    <td>Bill Gates</td>
+    <td>555 77 854</td>
+    <td>555 77 855</td>
+  </tr>
+</table>
+
+<h2>Cell that spans two rows:</h2>
+<table style="width:100%">
+  <tr>
+    <th>First Name:</th>
+    <td>Bill Gates</td>
+  </tr>
+  <tr>
+    <th rowspan="2">Telephone:</th>
+    <td>555 77 854</td>
+  </tr>
+  <tr>
+    <td>555 77 855</td>
+  </tr>
+</table>
+
+</body>
+</html>
+
